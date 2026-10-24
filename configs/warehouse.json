@@ -74,6 +74,8 @@
 
   "cameras": {
     "Hero": {"translate": [-13.207, -16.373, 1.900], "rotate_xyz": [89.301, 0.0, -13.883],
+             "focal_length": 18.148, "horizontal_aperture": 20.955},
+    "Line": {"translate": [-14.5, -14.5, 1.4], "rotate_xyz": [88.24, 0.0, -32.47],
              "focal_length": 18.148, "horizontal_aperture": 20.955}
   },
 
