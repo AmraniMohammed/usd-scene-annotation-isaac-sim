@@ -60,6 +60,18 @@ def add_label(prim, taxonomy, value, schema):
                              Sdf.ValueTypeNames.String).Set(value)
 
 
+def copy_timeline(src, dst):
+    """Timeline range of the source root layer, or an open-ended default.
+
+    Only the root layer's range counts, so a layer that sublayers or
+    references a scene would otherwise leave Isaac Sim with no usable
+    range (the timeline loops over one frame)."""
+    usable = src.HasStartTimeCode() and src.HasEndTimeCode() and src.endTimeCode > src.startTimeCode
+    dst.startTimeCode = src.startTimeCode if usable else 0
+    dst.endTimeCode = src.endTimeCode if usable else 1000000
+    dst.timeCodesPerSecond = src.timeCodesPerSecond if src.HasTimeCodesPerSecond() else 60
+
+
 def set_annotation(prim, name, value):
     """Custom attribute in the annotation: namespace."""
     if isinstance(value, bool):
@@ -338,6 +350,7 @@ def main():
     base_stage = Usd.Stage.Open(args.scene)
     UsdGeom.SetStageUpAxis(stage, UsdGeom.GetStageUpAxis(base_stage))
     UsdGeom.SetStageMetersPerUnit(stage, UsdGeom.GetStageMetersPerUnit(base_stage))
+    copy_timeline(base_stage.GetRootLayer(), stage.GetRootLayer())
     root = cfg.get("root") or str(base_stage.GetDefaultPrim().GetPath())
     if base_stage.GetDefaultPrim():
         stage.SetDefaultPrim(stage.GetPrimAtPath(root))

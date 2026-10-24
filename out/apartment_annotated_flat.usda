@@ -10,7 +10,10 @@
     }
     defaultPrim = "Apartment"
     doc = "Flattened from apartment_annotated.usda"
+    endTimeCode = 1000000
     metersPerUnit = 1
+    startTimeCode = 0
+    timeCodesPerSecond = 60
     upAxis = "Z"
 )
 

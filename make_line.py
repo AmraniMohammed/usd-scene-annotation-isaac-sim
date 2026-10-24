@@ -14,6 +14,8 @@ import os
 
 from pxr import Gf, Usd, UsdGeom
 
+from annotate import copy_timeline
+
 
 def rel(path, out):
     return os.path.relpath(os.path.abspath(path),
@@ -49,6 +51,7 @@ def main():
     stage.GetRootLayer().subLayerPaths.append(rel(args.environment, args.out))
     UsdGeom.SetStageUpAxis(stage, up)
     UsdGeom.SetStageMetersPerUnit(stage, mpu)
+    copy_timeline(env.GetRootLayer(), stage.GetRootLayer())
     root = env.GetDefaultPrim().GetPath()
     stage.SetDefaultPrim(stage.GetPrimAtPath(root))
 

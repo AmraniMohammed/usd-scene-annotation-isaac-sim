@@ -9,10 +9,13 @@
         int annotation_collision_kept = 0
     }
     defaultPrim = "Apartment"
+    endTimeCode = 1000000
     metersPerUnit = 1
+    startTimeCode = 0
     subLayers = [
         @../test_scene/apartment.usda@
     ]
+    timeCodesPerSecond = 60
     upAxis = "Z"
 )
 
