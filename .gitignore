@@ -6,6 +6,9 @@ __pycache__/
 scenes/
 *.usdz
 
+# Raw Movie Capture frames (joined into media/*.mp4)
+captures/
+
 # Outputs that contain or point to third-party scenes; only the test apartment is shared
 out/*
 !out/apartment_*
