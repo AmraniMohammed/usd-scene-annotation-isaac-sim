@@ -271,6 +271,22 @@ def apply_surface_velocity(stage, root, entries, mpu):
     return prims
 
 
+def add_cameras(stage, cameras, mpu):
+    """Fixed review viewpoints, so anyone opening the scene can return to the
+    same views (viewport camera menu). Positions in meters, angles in degrees,
+    lens values as Isaac Sim's viewport camera reports them."""
+    for name, c in cameras.items():
+        cam = UsdGeom.Camera.Define(stage, f"/Cameras/{name}")
+        xf = UsdGeom.XformCommonAPI(cam)
+        xf.SetTranslate(Gf.Vec3d(*[v / mpu for v in c["translate"]]))
+        xf.SetRotate(Gf.Vec3f(*c["rotate_xyz"]), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+        cam.CreateFocalLengthAttr(c.get("focal_length", 18.147562))
+        cam.CreateHorizontalApertureAttr(c.get("horizontal_aperture", 20.955))
+        # USD's default near clip is 1 unit, which would hide nearby objects
+        cam.CreateClippingRangeAttr(Gf.Vec2f(0.01 / mpu, 10000 / mpu))
+    return list(cameras)
+
+
 def add_marker(stage, name, center, size_m, mpu):
     """Invisible guide box for features that are not their own prim
     (a threshold strip, a cliff edge, a keep-out zone)."""
@@ -378,6 +394,9 @@ def main():
     # 6. moving surfaces (after collision, so it can set their approximation)
     moving = apply_surface_velocity(stage, root, cfg.get("surface_velocity", {}), meas.mpu)
 
+    # 7. review cameras
+    cameras = add_cameras(stage, cfg.get("cameras", {}), meas.mpu)
+
     stage.GetRootLayer().customLayerData = {
         "annotation_categories": Vt.StringArray(categories),
         "annotation_categories_present": Vt.StringArray(sorted(found)),
@@ -394,6 +413,7 @@ def main():
     print(f"collision        : {col['kept']} kept, {col['added']} added, "
           f"{col['disabled']} not collidable")
     print(f"moving surfaces  : {len(moving)}")
+    print(f"cameras          : {cameras or 'none'}")
     print(f"categories       : {sorted(found) or 'none'}")
 
     if args.flatten:

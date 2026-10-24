@@ -72,6 +72,11 @@
     "/Root/ConveyorLine/*/Conveyor/Rollers": [0.3, 0.0, 0.0]
   },
 
+  "cameras": {
+    "Hero": {"translate": [-13.207, -16.373, 1.900], "rotate_xyz": [89.301, 0.0, -13.883],
+             "focal_length": 18.148, "horizontal_aperture": 20.955}
+  },
+
   "features": [
     {
       "category": "moving_surfaces",

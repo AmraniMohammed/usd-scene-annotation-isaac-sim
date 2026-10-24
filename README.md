@@ -101,6 +101,7 @@ Menu names can differ slightly between Isaac Sim versions.
 - `surface_velocity`: velocity in m/s, in the prim's local frame.
 - `measure`: `height`, `clearance` (bottom of `underside` above `floor_level_m`, so legs don't count), `gap` (needs `between: [a, b]`).
 - `marker`: for a feature that isn't its own prim (a floor transition line, a keep-out area). Creates an invisible guide box under `/Annotations`, in meters.
+- `cameras`: review viewpoints written under `/Cameras`, e.g. `{"Hero": {"translate": [x, y, z], "rotate_xyz": [rx, ry, rz], "focal_length": 18.15}}` in meters and degrees. Pick them in the viewport camera menu.
 - `attributes`: any extra labels from the taxonomy, e.g. `{"material": "wood"}`. Written as `annotation:<name>`.
 
 ## Limits
