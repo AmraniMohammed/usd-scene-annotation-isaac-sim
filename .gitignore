@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Third-party scenes (NVIDIA assets): download them, see README
+scenes/
+*.usdz
+
+# Outputs that contain or point to third-party scenes; only the test apartment is shared
+out/*
+!out/apartment_*
+
+# Local notes and editor settings
+CLAUDE.md
+.claude/
+.vscode/

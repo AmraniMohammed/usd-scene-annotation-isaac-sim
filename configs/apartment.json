@@ -1,0 +1,78 @@
+{
+  "root": "/Apartment",
+  "floor_level_m": 0.0,
+
+  "rooms": {
+    "living_room": ["/Apartment/LivingRoom"],
+    "bedroom": ["/Apartment/Bedroom"]
+  },
+
+  "non_collidable": [
+    "/Apartment/LivingRoom/Cable"
+  ],
+
+  "surfaces": {
+    "/Apartment/LivingRoom/Floor": "hard",
+    "/Apartment/LivingRoom/Rug": "rug",
+    "/Apartment/Bedroom/Floor": "carpet"
+  },
+
+  "features": [
+    {
+      "category": "thresholds",
+      "prim": "/Apartment/Doorway/Threshold",
+      "type": "door_threshold",
+      "measure": ["height"],
+      "attributes": {"material": "wood", "shape": "flat"}
+    },
+    {
+      "category": "thresholds",
+      "marker": {"name": "HardToCarpet", "center": [5.12, 2.05, 0.0], "size": [0.04, 0.9, 0.01]},
+      "type": "hard_to_carpet_transition"
+    },
+    {
+      "category": "rugs_carpets",
+      "prim": "/Apartment/LivingRoom/Rug",
+      "type": "rug",
+      "measure": ["height"]
+    },
+    {
+      "category": "low_clearance",
+      "prim": "/Apartment/Bedroom/Bed",
+      "underside": "/Apartment/Bedroom/Bed/Frame",
+      "type": "bed",
+      "measure": ["clearance"]
+    },
+    {
+      "category": "low_clearance",
+      "prim": "/Apartment/LivingRoom/Table",
+      "underside": "/Apartment/LivingRoom/Table/Top",
+      "type": "table",
+      "measure": ["clearance"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": "/Apartment/LivingRoom/Cable",
+      "type": "cable",
+      "measure": ["height"]
+    },
+    {
+      "category": "floor_bumps",
+      "prim": "/Apartment/LivingRoom/Vent",
+      "type": "floor_vent",
+      "measure": ["height"]
+    },
+    {
+      "category": "reflective_transparent",
+      "prim": "/Apartment/Bedroom/Mirror",
+      "type": "mirror"
+    },
+    {
+      "category": "narrow_passages",
+      "prim": "/Apartment/LivingRoom/Chair_A",
+      "type": "chair_table_gap",
+      "between": ["/Apartment/LivingRoom/Chair_A", "/Apartment/LivingRoom/Table"],
+      "measure": ["gap"]
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+#usda 1.0
+(
+    customLayerData = {
+        string[] annotation_categories = ["thresholds", "stairs_cliffs", "low_clearance", "small_obstacles", "rugs_carpets", "floor_bumps", "reflective_transparent", "narrow_passages"]
+        string[] annotation_categories_absent = ["stairs_cliffs"]
+        string[] annotation_categories_present = ["floor_bumps", "low_clearance", "narrow_passages", "reflective_transparent", "rugs_carpets", "small_obstacles", "thresholds"]
+        int annotation_collision_added = 24
+        int annotation_collision_disabled = 1
+        int annotation_collision_kept = 0
+    }
+    defaultPrim = "Apartment"
+    metersPerUnit = 1
+    subLayers = [
+        @../test_scene/apartment.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "Apartment"
+{
+    over "LivingRoom" (
+        prepend apiSchemas = ["SemanticsLabelsAPI:room"]
+    )
+    {
+        custom string annotation:room = "living_room"
+        token[] semantics:labels:room = ["living_room"]
+
+        over "Floor" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:surface = "hard"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Rug" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:category = "rugs_carpets"
+            custom double annotation:height_m = 0.012
+            custom string annotation:surface = "rug"
+            custom string annotation:type = "rug"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+            token[] semantics:labels:class = ["rug"]
+        }
+
+        over "Table" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class"]
+        )
+        {
+            custom string annotation:category = "low_clearance"
+            custom double annotation:clearance_m = 0.71
+            custom string annotation:type = "table"
+            token[] semantics:labels:class = ["table"]
+
+            over "Top" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_2" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_3" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+        }
+
+        over "Cable" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class", "PhysicsCollisionAPI"]
+        )
+        {
+            custom string annotation:category = "small_obstacles"
+            custom double annotation:height_m = 0.008
+            custom string annotation:type = "cable"
+            bool physics:collisionEnabled = 0
+            token[] semantics:labels:class = ["cable"]
+        }
+
+        over "Vent" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:category = "floor_bumps"
+            custom double annotation:height_m = 0.02
+            custom string annotation:type = "floor_vent"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+            token[] semantics:labels:class = ["floor_vent"]
+        }
+
+        over "Chair_A" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:category = "narrow_passages"
+            custom string annotation:gap_between = "/Apartment/LivingRoom/Chair_A | /Apartment/LivingRoom/Table"
+            custom double annotation:gap_width_m = 0.175
+            custom string annotation:type = "chair_table_gap"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+            token[] semantics:labels:class = ["chair_table_gap"]
+        }
+
+        over "Chair_B" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+    }
+
+    over "Bedroom" (
+        prepend apiSchemas = ["SemanticsLabelsAPI:room"]
+    )
+    {
+        custom string annotation:room = "bedroom"
+        token[] semantics:labels:room = ["bedroom"]
+
+        over "Floor" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:surface = "carpet"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Bed" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class"]
+        )
+        {
+            custom string annotation:category = "low_clearance"
+            custom double annotation:clearance_m = 0.15
+            custom string annotation:type = "bed"
+            token[] semantics:labels:class = ["bed"]
+
+            over "Frame" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_2" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+
+            over "Leg_3" (
+                prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            )
+            {
+                uniform token physics:approximation = "none"
+                bool physics:collisionEnabled = 1
+            }
+        }
+
+        over "Mirror" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:category = "reflective_transparent"
+            custom string annotation:type = "mirror"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+            token[] semantics:labels:class = ["mirror"]
+        }
+    }
+
+    over "Doorway"
+    {
+        over "Threshold" (
+            prepend apiSchemas = ["SemanticsLabelsAPI:class", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom string annotation:category = "thresholds"
+            custom double annotation:height_m = 0.02
+            custom string annotation:material = "wood"
+            custom string annotation:shape = "flat"
+            custom string annotation:type = "door_threshold"
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+            token[] semantics:labels:class = ["door_threshold"]
+        }
+    }
+
+    over "Walls"
+    {
+        over "Outer_S" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Outer_N" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Outer_W" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Outer_E" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Divider_S" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+
+        over "Divider_N" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            bool physics:collisionEnabled = 1
+        }
+    }
+}
+
+def "Annotations"
+{
+    def Cube "HardToCarpet" (
+        prepend apiSchemas = ["SemanticsLabelsAPI:class"]
+    )
+    {
+        custom string annotation:category = "thresholds"
+        custom string annotation:type = "hard_to_carpet_transition"
+        uniform token purpose = "guide"
+        token[] semantics:labels:class = ["hard_to_carpet_transition"]
+        double size = 1
+        float3 xformOp:scale = (0.04, 0.9, 0.01)
+        double3 xformOp:translate = (5.12, 2.05, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+}
+

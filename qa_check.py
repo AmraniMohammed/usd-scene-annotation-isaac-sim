@@ -1,0 +1,128 @@
+"""
+Check an annotated scene and write the per-scene QA note.
+
+Usage:
+    python qa_check.py out/scene_annotated.usda [-o out/scene_qa_note.md]
+Exit code 1 if a check fails.
+"""
+import argparse
+import sys
+from collections import Counter
+
+from pxr import Usd, UsdGeom, UsdPhysics
+
+from annotate import DEFAULT_CATEGORIES
+
+
+def room_label(prim):
+    for attr in ("semantics:labels:room", "semantic:Semantics_room:params:semanticData"):
+        a = prim.GetAttribute(attr)
+        if a and a.HasAuthoredValue():
+            v = a.Get()
+            if isinstance(v, str):
+                return v
+            return v[0] if len(v) else None
+    return None
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("scene")
+    ap.add_argument("-o", "--out", default=None)
+    args = ap.parse_args()
+
+    stage = Usd.Stage.Open(args.scene)
+    info = stage.GetRootLayer().customLayerData
+    categories = list(info.get("annotation_categories", DEFAULT_CATEGORIES))
+
+    geom = with_api = enabled = 0
+    missing = []
+    rooms = Counter()
+    cats = Counter()
+    measures = []
+    surfaces = Counter()
+    moving, moving_errors = [], []
+
+    for prim in stage.Traverse():
+        path = str(prim.GetPath())
+        label = room_label(prim)
+        if label:
+            rooms[label] += 1
+        a = prim.GetAttribute("annotation:category")
+        if a and a.HasAuthoredValue():
+            cats[a.Get()] += 1
+            for m in ("height_m", "clearance_m", "gap_width_m"):
+                v = prim.GetAttribute(f"annotation:{m}")
+                if v and v.HasAuthoredValue():
+                    measures.append(f"{path}: {m} = {v.Get():.3f}")
+        s = prim.GetAttribute("annotation:surface")
+        if s and s.HasAuthoredValue():
+            surfaces[s.Get()] += 1
+        # read the attribute, not GetAppliedSchemas(): without the PhysX
+        # plugin loaded, USD drops the unknown schema name from that list
+        sv = prim.GetAttribute("physxSurfaceVelocity:surfaceVelocity")
+        if sv and sv.HasAuthoredValue():
+            v = sv.Get()
+            moving.append(f"{path}: {tuple(round(x, 3) for x in v)} (local, stage units/s)")
+            body = UsdPhysics.RigidBodyAPI(prim)
+            if not (prim.HasAPI(UsdPhysics.RigidBodyAPI) and body.GetKinematicEnabledAttr().Get()):
+                moving_errors.append(f"{path}: not a kinematic rigid body")
+        if prim.IsA(UsdGeom.Gprim) and not path.startswith("/Annotations"):
+            geom += 1
+            if prim.HasAPI(UsdPhysics.CollisionAPI):
+                with_api += 1
+                if UsdPhysics.CollisionAPI(prim).GetCollisionEnabledAttr().Get():
+                    enabled += 1
+            else:
+                missing.append(path)
+
+    ok = with_api == geom and geom > 0 and len(rooms) > 0 and not moving_errors
+    lines = [
+        f"# QA note: {args.scene}",
+        "",
+        "## Core layer",
+        f"- Geometry prims: {geom}",
+        f"- Collision attribute set: {with_api}/{geom} "
+        f"({enabled} collidable, {with_api - enabled} not collidable)",
+    ]
+    if "annotation_collision_kept" in info:
+        lines.append(f"- Colliders: {info['annotation_collision_kept']} kept from the scene, "
+                     f"{info['annotation_collision_added']} added, "
+                     f"{info['annotation_collision_disabled']} set not collidable")
+    lines += [
+        f"- Room/zone labels: {', '.join(f'{r} ({n})' for r, n in sorted(rooms.items())) or 'NONE'}",
+        f"- Floor surfaces: {', '.join(f'{s} ({n})' for s, n in surfaces.items()) or 'none labeled'}",
+        f"- Moving surfaces: {len(moving) or 'none'}",
+        "",
+        "## Failure-case categories",
+    ]
+    for i, c in enumerate(categories, 1):
+        lines.append(f"{i}. {c}: {'present (' + str(cats[c]) + ')' if cats[c] else 'absent'}")
+    if measures:
+        lines += ["", "## Measurements (read from geometry)"] + [f"- {m}" for m in measures]
+    if moving:
+        lines += ["", "## Surface velocity"] + [f"- {m}" for m in moving]
+    lines += [
+        "",
+        "## Isaac Sim check (manual)",
+        "- [ ] Annotated USD opens in Isaac Sim",
+        "- [ ] Room/zone labels visible in the semantics editor",
+        "- [ ] Colliders visible with physics debug visualization",
+    ]
+    if moving:
+        lines.append("- [ ] A box dropped on each conveyor moves along it after Play")
+    lines += ["", f"Automated checks: {'PASS' if ok else 'FAIL'}"]
+    if missing:
+        lines.append(f"Geometry without collision attribute: {missing[:10]}")
+    lines += moving_errors
+
+    note = "\n".join(lines)
+    print(note)
+    if args.out:
+        with open(args.out, "w") as fh:
+            fh.write(note + "\n")
+    sys.exit(0 if ok else 1)
+
+
+if __name__ == "__main__":
+    main()
