@@ -1,0 +1,210 @@
+{
+  "root": "/Root",
+  "floor_level_m": 0.0,
+
+  "categories": [
+    "moving_surfaces",
+    "keep_out_zones",
+    "low_clearance",
+    "small_obstacles",
+    "reflective_transparent",
+    "aisles",
+    "ramps_dock_plates"
+  ],
+
+  "rooms": {
+    "open_floor":    [{"box": [[-28, -23.5], [8, 8]]}],
+    "storage":       [{"box": [[-28, 8], [8, 31]]}],
+    "conveyor_cell": [{"box": [[-14, -14], [-8, 0]]}]
+  },
+
+  "classes": {
+    "/Root/SM_floor*": "floor",
+    "/Root/GroundPlane": "floor",
+    "/Root/SM_Wall*": "wall",
+    "/Root/SM_WallWire*": "cable",
+    "/Root/SM_Ceiling*": "ceiling",
+    "/Root/SM_Pillar*": "pillar",
+    "/Root/SM_BeamA*": "beam",
+    "/Root/SM_Bracket*": "beam",
+    "/Root/SM_LampCeiling*": "lamp",
+    "/Root/SM_FloorDecal*": "floor_marking",
+    "/Root/SM_RackShelf*": "rack",
+    "/Root/SM_RackFrame*": "rack",
+    "/Root/SM_Rackshield*": "rack",
+    "/Root/SM_RackPile*": "rack_parts",
+    "/Root/SM_PaletteA*": "pallet",
+    "/Root/Box*": "box",
+    "/Root/SM_CardBox*": "box",
+    "/Root/Crate*": "crate",
+    "/Root/SM_CratePlastic*": "crate",
+    "/Root/Barrel*": "barrel",
+    "/Root/SM_BarelPlastic*": "barrel",
+    "/Root/Bottle*": "bottle",
+    "/Root/SM_BottlePlastic*": "bottle",
+    "/Root/SM_BucketPlastic*": "bucket",
+    "/Root/SM_Paper*": "paper",
+    "/Root/S_AisleSign*": "sign",
+    "/Root/SM_Sign*": "sign",
+    "/Root/SM_SignCVer*": "rack_label",
+    "/Root/SM_EmergencyBoard*": "sign",
+    "/Root/S_Barcode*": "label",
+    "/Root/SM_FireExtinguisher*": "fire_extinguisher",
+    "/Root/SM_FuseBox*": "electrical_box",
+    "/Root/S_TrafficCone*": "traffic_cone",
+    "/Root/S_WetFloorSign*": "wet_floor_sign",
+    "/Root/SM_PushcartA*": "pushcart",
+    "/Root/forklift": "forklift",
+    "/Root/ConveyorLine": "conveyor"
+  },
+
+  "surfaces": {
+    "/Root/SM_floor*": "hard_glossy"
+  },
+
+  "non_collidable": [
+    "/Root/ConveyorLine/*/Conveyor/SM_ConveyorBelt_A04_02",
+    "/Root/ConveyorLine/*/Conveyor/SM_ConveyorBelt_A04_Decal_02",
+    "/Root/ConveyorLine/*/Conveyor/Rubberbands"
+  ],
+
+  "surface_velocity": {
+    "/Root/ConveyorLine/*/Conveyor/Rollers": [0.3, 0.0, 0.0]
+  },
+
+  "features": [
+    {
+      "category": "moving_surfaces",
+      "prim": "/Root/ConveyorLine/*/Conveyor/Rollers",
+      "type": "roller_conveyor",
+      "attributes": {"direction": "Section_01 to Section_05 (world +Y)"}
+    },
+    {
+      "category": "keep_out_zones",
+      "type": "conveyor_keep_out",
+      "marker": {"name": "ConveyorKeepOut", "center": [-11.0, -7.0, 0.0], "size": [2.2, 11.0, 0.01]},
+      "attributes": {"margin_m": 0.5, "basis": "AMR clearance to fixed installations (about 0.5 m in common AGV/AMR standards)"}
+    },
+    {
+      "category": "keep_out_zones",
+      "type": "forklift_area",
+      "marker": {"name": "ForkliftArea", "center": [3.2, 10.8, 0.0], "size": [5.5, 3.2, 0.01]},
+      "attributes": {"margin_m": 1.0, "basis": "forklift footprint plus 1 m; parked in this scene but treated as a moving vehicle"}
+    },
+    {
+      "category": "keep_out_zones",
+      "prim": ["/Root/SM_FloorDecal_RecRed1X*", "/Root/SM_FloorDecal_QuadRed*", "/Root/SM_FloorDecal_Keepclear*"],
+      "type": "painted_keep_clear"
+    },
+    {
+      "category": "low_clearance",
+      "prim": "/Root/ConveyorLine",
+      "underside": "/Root/ConveyorLine/Section_01/Conveyor/Collisions/Wall_d0_r0",
+      "type": "conveyor_underside",
+      "measure": ["clearance"]
+    },
+    {
+      "category": "low_clearance",
+      "prim": [
+        "/Root/SM_RackShelf_156", "/Root/SM_RackShelf_159", "/Root/SM_RackShelf_162", "/Root/SM_RackShelf_165",
+        "/Root/SM_RackShelf_1061", "/Root/SM_RackShelf_1066", "/Root/SM_RackShelf_1071", "/Root/SM_RackShelf_179",
+        "/Root/SM_RackShelf_135", "/Root/SM_RackShelf_138", "/Root/SM_RackShelf_141", "/Root/SM_RackShelf_144",
+        "/Root/SM_RackShelf_2966", "/Root/SM_RackShelf_2970", "/Root/SM_RackShelf_2975", "/Root/SM_RackShelf_2980",
+        "/Root/SM_RackShelf_4470", "/Root/SM_RackShelf_4475", "/Root/SM_RackShelf_4480", "/Root/SM_RackShelf_4485",
+        "/Root/SM_RackShelf_3822", "/Root/SM_RackShelf_3827", "/Root/SM_RackShelf_3832", "/Root/SM_RackShelf_3837",
+        "/Root/SM_RackShelf_221", "/Root/SM_RackShelf_224", "/Root/SM_RackShelf_227", "/Root/SM_RackShelf_230"
+      ],
+      "type": "rack_bottom_shelf",
+      "measure": ["clearance"]
+    },
+    {
+      "category": "low_clearance",
+      "prim": ["/Root/SM_FireExtinguisher*", "/Root/SM_EmergencyBoard*"],
+      "type": "wall_mounted_protrusion",
+      "measure": ["clearance"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": "/Root/S_TrafficCone*",
+      "type": "traffic_cone",
+      "measure": ["height"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": "/Root/S_WetFloorSign*",
+      "type": "wet_floor_sign",
+      "measure": ["height"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": "/Root/SM_BottlePlasticD*",
+      "type": "flat_bottle",
+      "measure": ["height"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": ["/Root/SM_CardBoxA*", "/Root/SM_CardBoxB_02_32", "/Root/SM_CardBoxB_3", "/Root/SM_CardBoxD*"],
+      "type": "loose_box",
+      "measure": ["height"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": ["/Root/SM_CratePlastic*", "/Root/SM_BarelPlastic*"],
+      "type": "loose_container",
+      "measure": ["height"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": "/Root/SM_PushcartA*",
+      "type": "pushcart",
+      "measure": ["height"]
+    },
+    {
+      "category": "small_obstacles",
+      "prim": [
+        "/Root/SM_PaperNote_Small_15", "/Root/SM_PaperNote_Small_06_54", "/Root/SM_PaperNote_Small_20",
+        "/Root/SM_PaperNote_Small_16", "/Root/SM_PaperNote_Small_13", "/Root/SM_PaperNote_Small_17",
+        "/Root/SM_PaperNote_Small_18", "/Root/SM_PaperNote_Small_09_72", "/Root/SM_PaperNote_Small_08_75"
+      ],
+      "type": "flat_debris",
+      "measure": ["height"]
+    },
+    {
+      "category": "reflective_transparent",
+      "type": "wet_floor_area",
+      "marker": {"name": "WetFloorArea", "center": [-3.0, 11.6, 0.0], "size": [3.4, 6.4, 0.01]},
+      "attributes": {"visual": "no puddle rendered; the area is marked by wet-floor signs and cones"}
+    },
+    {
+      "category": "aisles", "type": "rack_aisle",
+      "marker": {"name": "Aisle_1", "center": [-22.84, 16.90, 0.0], "size": [3.88, 16.12, 0.01]},
+      "between": ["/Root/SM_PaletteA_309", "/Root/Box_12750"], "measure": ["gap"]
+    },
+    {
+      "category": "aisles", "type": "rack_aisle",
+      "marker": {"name": "Aisle_2", "center": [-17.89, 16.90, 0.0], "size": [3.88, 16.12, 0.01]},
+      "between": ["/Root/SM_Rackshield_1074", "/Root/SM_Rackshield_27"], "measure": ["gap"]
+    },
+    {
+      "category": "aisles", "type": "rack_aisle",
+      "marker": {"name": "Aisle_3", "center": [-12.94, 16.90, 0.0], "size": [3.87, 16.12, 0.01]},
+      "between": ["/Root/SM_Rackshield_29", "/Root/SM_Rackshield_2984"], "measure": ["gap"]
+    },
+    {
+      "category": "aisles", "type": "rack_aisle",
+      "marker": {"name": "Aisle_4", "center": [-7.98, 16.85, 0.0], "size": [3.88, 16.02, 0.01]},
+      "between": ["/Root/Box_19299", "/Root/SM_PaletteA_4528"], "measure": ["gap"]
+    },
+    {
+      "category": "aisles", "type": "rack_aisle",
+      "marker": {"name": "Aisle_5", "center": [-3.03, 16.85, 0.0], "size": [3.87, 16.02, 0.01]},
+      "between": ["/Root/SM_RackShelf_4485", "/Root/Box_38098"], "measure": ["gap"],
+      "attributes": {"note": "loose clutter in the aisle (see small_obstacles) narrows it further"}
+    },
+    {
+      "category": "aisles", "type": "rack_aisle",
+      "marker": {"name": "Aisle_6", "center": [1.94, 16.90, 0.0], "size": [3.89, 16.12, 0.01]},
+      "between": ["/Root/SM_PaletteA_3879", "/Root/SM_PaletteA_421"], "measure": ["gap"]
+    }
+  ]
+}

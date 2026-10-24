@@ -262,7 +262,7 @@ def add_marker(stage, name, center, size_m, mpu):
     return cube.GetPrim()
 
 
-def apply_features(stage, cfg, categories, meas, schema):
+def apply_features(stage, cfg, root, categories, meas, schema):
     found = set()
     for i, f in enumerate(cfg.get("features", [])):
         cat = f["category"]
@@ -271,32 +271,33 @@ def apply_features(stage, cfg, categories, meas, schema):
 
         if "marker" in f:
             m = f["marker"]
-            prim = add_marker(stage, m.get("name", f"{cat}_{i}"),
-                              m["center"], m["size"], meas.mpu)
+            prims = [add_marker(stage, m.get("name", f"{cat}_{i}"),
+                                m["center"], m["size"], meas.mpu)]
         else:
-            prim = stage.GetPrimAtPath(f["prim"])
-            if not prim.IsValid():
-                raise ValueError(f"prim not found: {f['prim']}")
+            # paths or patterns: each match gets its own labels and measurements
+            patterns = f["prim"] if isinstance(f["prim"], list) else [f["prim"]]
+            prims = [p for pat in patterns for p in find(stage, root, pat)]
 
-        set_annotation(prim, "category", cat)
-        set_annotation(prim, "type", f.get("type", cat))
-        # own taxonomy, so the object's "class" label is left as it is
-        add_label(prim, "failure_case", f.get("type", cat), schema)
-        for k, v in f.get("attributes", {}).items():
-            set_annotation(prim, k, v)
+        for prim in prims:
+            set_annotation(prim, "category", cat)
+            set_annotation(prim, "type", f.get("type", cat))
+            # own taxonomy, so the object's "class" label is left as it is
+            add_label(prim, "failure_case", f.get("type", cat), schema)
+            for k, v in f.get("attributes", {}).items():
+                set_annotation(prim, k, v)
 
-        # measurements read from geometry, never typed by hand
-        path = str(prim.GetPath())
-        for what in f.get("measure", []):
-            if what == "height":
-                set_annotation(prim, "height_m", round(meas.height(path), 4))
-            elif what == "clearance":
-                src = f.get("underside", path)  # e.g. the bed frame, not its legs
-                set_annotation(prim, "clearance_m", round(meas.bottom(src), 4))
-            elif what == "gap":
-                a, b = f["between"]
-                set_annotation(prim, "gap_width_m", round(meas.gap(a, b), 4))
-                set_annotation(prim, "gap_between", f"{a} | {b}")
+            # measurements read from geometry, never typed by hand
+            path = str(prim.GetPath())
+            for what in f.get("measure", []):
+                if what == "height":
+                    set_annotation(prim, "height_m", round(meas.height(path), 4))
+                elif what == "clearance":
+                    src = f.get("underside", path)  # e.g. the bed frame, not its legs
+                    set_annotation(prim, "clearance_m", round(meas.bottom(src), 4))
+                elif what == "gap":
+                    a, b = f["between"]
+                    set_annotation(prim, "gap_width_m", round(meas.gap(a, b), 4))
+                    set_annotation(prim, "gap_between", f"{a} | {b}")
         found.add(cat)
     return found
 
@@ -346,7 +347,7 @@ def main():
             set_annotation(prim, "surface", surface)
 
     # 4. failure cases (before collision, so markers exist and are skipped)
-    found = apply_features(stage, cfg, categories, meas, args.schema)
+    found = apply_features(stage, cfg, root, categories, meas, args.schema)
 
     # 5. collidable attribute on every geometry prim
     col = apply_collision(stage, root, cfg.get("non_collidable", []))
