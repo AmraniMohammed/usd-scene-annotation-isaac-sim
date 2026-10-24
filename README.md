@@ -16,7 +16,7 @@ The original scene is never modified. Annotations go in a separate layer that su
 
 | File | Purpose |
 |---|---|
-| `inspect_scene.py` | Prints the prim tree with types, sizes and positions, to write the config |
+| `inspect_scene.py` | Prints the prim tree with types, sizes and positions, to write the config. `--summary` groups a large flat scene's objects by name, with counts, sizes and heights |
 | `annotate.py` | Applies the config: labels, collision, moving surfaces, failure cases, measurements |
 | `qa_check.py` | Checks the result and writes the QA note |
 | `make_line.py` | Places a straight conveyor line in an environment, as a small file referencing both |
