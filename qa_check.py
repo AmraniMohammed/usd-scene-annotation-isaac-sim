@@ -6,6 +6,7 @@ Usage:
 Exit code 1 if a check fails.
 """
 import argparse
+import math
 import sys
 from collections import Counter
 
@@ -52,7 +53,7 @@ def main():
     classes = Counter()
     class_cache, unclassified = {}, []
     cats = Counter()
-    measures = []
+    measures, bad_measures = [], []
     surfaces = Counter()
     moving, moving_errors = [], []
 
@@ -71,6 +72,8 @@ def main():
                 v = prim.GetAttribute(f"annotation:{m}")
                 if v and v.HasAuthoredValue():
                     measures.append(f"{path}: {m} = {v.Get():.3f}")
+                    if not (math.isfinite(v.Get()) and abs(v.Get()) < 1000):
+                        bad_measures.append(f"Invalid measurement: {path}: {m} = {v.Get()}")
         s = prim.GetAttribute("annotation:surface")
         if s and s.HasAuthoredValue():
             surfaces[s.Get()] += 1
@@ -94,7 +97,8 @@ def main():
             else:
                 missing.append(path)
 
-    ok = with_api == geom and geom > 0 and len(rooms) > 0 and not moving_errors
+    ok = (with_api == geom and geom > 0 and len(rooms) > 0
+          and not moving_errors and not bad_measures)
     lines = [
         f"# QA note: {args.scene}",
         "",
@@ -140,7 +144,7 @@ def main():
     lines += ["", f"Automated checks: {'PASS' if ok else 'FAIL'}"]
     if missing:
         lines.append(f"Geometry without collision attribute: {missing[:10]}")
-    lines += moving_errors
+    lines += moving_errors + bad_measures
 
     note = "\n".join(lines)
     print(note)

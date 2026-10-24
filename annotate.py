@@ -85,6 +85,12 @@ class Measurer:
         self.cache = UsdGeom.BBoxCache(
             Usd.TimeCode.Default(),
             [UsdGeom.Tokens.default_, UsdGeom.Tokens.render])
+        # for prims that only hold stand-in geometry (e.g. collision shapes
+        # tagged purpose "proxy")
+        self.all_cache = UsdGeom.BBoxCache(
+            Usd.TimeCode.Default(),
+            [UsdGeom.Tokens.default_, UsdGeom.Tokens.render,
+             UsdGeom.Tokens.proxy, UsdGeom.Tokens.guide])
         self.stage = stage
 
     def box(self, path):
@@ -92,6 +98,10 @@ class Measurer:
         if not prim.IsValid():
             raise ValueError(f"prim not found: {path}")
         r = self.cache.ComputeWorldBound(prim).ComputeAlignedRange()
+        if r.IsEmpty():
+            r = self.all_cache.ComputeWorldBound(prim).ComputeAlignedRange()
+        if r.IsEmpty():
+            raise ValueError(f"no geometry to measure: {path}")
         return r.GetMin() * self.mpu, r.GetMax() * self.mpu
 
     def bottom(self, path):
