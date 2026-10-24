@@ -7,6 +7,19 @@
     "bedroom": ["/Apartment/Bedroom"]
   },
 
+  "classes": {
+    "/Apartment/*/Floor": "floor",
+    "/Apartment/Walls": "wall",
+    "/Apartment/Doorway/Threshold": "threshold",
+    "/Apartment/LivingRoom/Rug": "rug",
+    "/Apartment/LivingRoom/Table": "table",
+    "/Apartment/LivingRoom/Chair_*": "chair",
+    "/Apartment/LivingRoom/Cable": "cable",
+    "/Apartment/LivingRoom/Vent": "floor_vent",
+    "/Apartment/Bedroom/Bed": "bed",
+    "/Apartment/Bedroom/Mirror": "mirror"
+  },
+
   "non_collidable": [
     "/Apartment/LivingRoom/Cable"
   ],

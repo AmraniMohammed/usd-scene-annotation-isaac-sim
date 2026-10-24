@@ -1,7 +1,7 @@
 """
-Annotate a USD scene for NVIDIA Isaac Sim: room or zone labels, collidable
-attributes, floor surface types, failure-case labels and conveyor surface
-velocity, driven by a JSON config.
+Annotate a USD scene for NVIDIA Isaac Sim: room or zone labels, object
+classes, collidable attributes, floor surface types, failure-case labels and
+conveyor surface velocity, driven by a JSON config.
 
 The original scene is never modified. Annotations are written to a separate
 layer that sublayers the original, and can also be flattened into one file.
@@ -180,6 +180,19 @@ def label_zones(stage, root, rooms, meas, schema):
     return counts
 
 
+def label_classes(stage, root, classes, schema):
+    """Object class labels (pallet, box, chair...) for perception data.
+    Each key is a prim path or pattern; the label covers everything below it.
+    Rules apply in config order, so a later rule can override an earlier one."""
+    counts = {}
+    for pattern, cls in classes.items():
+        prims = find(stage, root, pattern)
+        for prim in prims:
+            add_label(prim, "class", cls, schema)
+        counts[cls] = counts.get(cls, 0) + len(prims)
+    return counts
+
+
 def apply_collision(stage, root, non_collidable):
     """Every geometry prim gets an explicit collision decision.
 
@@ -267,7 +280,8 @@ def apply_features(stage, cfg, categories, meas, schema):
 
         set_annotation(prim, "category", cat)
         set_annotation(prim, "type", f.get("type", cat))
-        add_label(prim, "class", f.get("type", cat), schema)
+        # own taxonomy, so the object's "class" label is left as it is
+        add_label(prim, "failure_case", f.get("type", cat), schema)
         for k, v in f.get("attributes", {}).items():
             set_annotation(prim, k, v)
 
@@ -323,18 +337,21 @@ def main():
     # 1. room / zone labels
     zones = label_zones(stage, root, cfg.get("rooms", {}), meas, args.schema)
 
-    # 2. floor surfaces (hard / carpet / rug)
+    # 2. object classes
+    classes = label_classes(stage, root, cfg.get("classes", {}), args.schema)
+
+    # 3. floor surfaces (hard / carpet / rug)
     for p, surface in cfg.get("surfaces", {}).items():
         for prim in find(stage, root, p):
             set_annotation(prim, "surface", surface)
 
-    # 3. failure cases (before collision, so markers exist and are skipped)
+    # 4. failure cases (before collision, so markers exist and are skipped)
     found = apply_features(stage, cfg, categories, meas, args.schema)
 
-    # 4. collidable attribute on every geometry prim
+    # 5. collidable attribute on every geometry prim
     col = apply_collision(stage, root, cfg.get("non_collidable", []))
 
-    # 5. moving surfaces (after collision, so it can set their approximation)
+    # 6. moving surfaces (after collision, so it can set their approximation)
     moving = apply_surface_velocity(stage, root, cfg.get("surface_velocity", {}), meas.mpu)
 
     stage.GetRootLayer().customLayerData = {
@@ -349,6 +366,7 @@ def main():
     stage.Save()
     print(f"annotation layer : {args.out}")
     print(f"zones            : {zones or 'none'}")
+    print(f"classes          : {classes or 'none'}")
     print(f"collision        : {col['kept']} kept, {col['added']} added, "
           f"{col['disabled']} not collidable")
     print(f"moving surfaces  : {len(moving)}")

@@ -5,6 +5,7 @@
 - Collision attribute set: 25/25 (24 collidable, 1 not collidable)
 - Colliders: 0 kept from the scene, 24 added, 1 set not collidable
 - Room/zone labels: bedroom (1), living_room (1)
+- Object classes: bed (1), cable (1), chair (2), floor (2), floor_vent (1), mirror (1), rug (1), table (1), threshold (1), wall (1)
 - Floor surfaces: hard (1), rug (1), carpet (1)
 - Moving surfaces: none
 
@@ -27,9 +28,13 @@
 - /Apartment/Bedroom/Bed: clearance_m = 0.150
 - /Apartment/Doorway/Threshold: height_m = 0.020
 
+## Geometry without a class label
+- 0 of 25 geometry prims
+
 ## Isaac Sim check (manual)
 - [ ] Annotated USD opens in Isaac Sim
 - [ ] Room/zone labels visible in the semantics editor
+- [ ] Class labels correct in a semantic segmentation render
 - [ ] Colliders visible with physics debug visualization
 
 Automated checks: PASS

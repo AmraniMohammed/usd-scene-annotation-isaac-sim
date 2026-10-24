@@ -3,6 +3,7 @@
 Python tools that prepare a USD scene for robot simulation in NVIDIA Isaac Sim, driven by one JSON config per scene:
 
 - **Zone and room labels** as semantic labels Isaac Sim reads (`UsdSemantics.LabelsAPI`, or the legacy `SemanticsAPI` format with `--schema legacy`). A zone can be a list of prims or a floor rectangle, for scenes with no room structure such as a warehouse.
+- **Object class labels** (pallet, box, chair...) for perception data such as Isaac Sim Replicator segmentation, set by path rules in the config. The QA note lists any geometry left without a class.
 - **A collision decision on every geometry prim** (`UsdPhysics.CollisionAPI`). Colliders the scene already has are kept as authored. Geometry without one gets a triangle-mesh collider. Listed prims are set not collidable: a loose cable, or visual meshes whose collision comes from simpler proxy shapes.
 - **Moving surfaces**: conveyor belts and roller beds become kinematic bodies with a PhysX surface velocity, so boxes placed on them are carried along.
 - **Failure-case labels** for robot navigation, with the category list set per site in the config (industrial: moving surfaces, keep-out zones, low clearance, small floor obstacles, narrow aisles; residential: thresholds, rugs, low furniture, floor vents, mirrors).
@@ -79,6 +80,7 @@ Menu names can differ slightly between Isaac Sim versions.
     "living_room":   ["/Apartment/LivingRoom"],
     "conveyor_cell": [{"box": [[-14, -14], [-8, -4]]}]
   },
+  "classes":          {"/Root/SM_PaletteA*": "pallet", "/Apartment/LivingRoom/Chair_*": "chair"},
   "non_collidable":   ["/Apartment/LivingRoom/Cable", "/Root/ConveyorLine/*/Conveyor/Rubberbands"],
   "surface_velocity": {"/Root/ConveyorLine/*/Conveyor/Rollers": [0.3, 0.0, 0.0]},
   "surfaces":         {"/Apartment/LivingRoom/Rug": "rug"},
@@ -93,7 +95,9 @@ Menu names can differ slightly between Isaac Sim versions.
 
 - `categories`: the failure-case list for this site. If it's left out, the residential list is used.
 - `rooms`: each entry is a prim path, or a floor rectangle `{"box": [[xmin, ymin], [xmax, ymax]]}` in meters. A rectangle labels every direct child of `root` whose footprint center lies inside it.
-- `non_collidable`, `surface_velocity`, `surfaces`: prim paths or patterns with `*`. A path also covers everything below it.
+- `classes`, `non_collidable`, `surface_velocity`, `surfaces`: prim paths or patterns with `*`. A path also covers everything below it.
+- `classes`: written as `semantics:labels:class`. Rules apply in order, so a later rule can override an earlier one. Names in a path pattern are only a starting point: check the result in a segmentation render.
+- `features`: each one gets `annotation:category`, `annotation:type` and a `semantics:labels:failure_case` label, kept separate from the object's class.
 - `surface_velocity`: velocity in m/s, in the prim's local frame.
 - `measure`: `height`, `clearance` (bottom of `underside` above `floor_level_m`, so legs don't count), `gap` (needs `between: [a, b]`).
 - `marker`: for a feature that isn't its own prim (a floor transition line, a keep-out area). Creates an invisible guide box under `/Annotations`, in meters.
