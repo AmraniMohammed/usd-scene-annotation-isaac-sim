@@ -44,7 +44,7 @@ https://github.com/user-attachments/assets/a7434fb2-0684-47df-aae5-25492e79ad18
 | | |
 |---|---|
 | Geometry prims | 3,809, all with a collision decision |
-| Colliders | 3,658 kept from NVIDIA, 1 added, 150 set not collidable (conveyor frame, stickers and drive bands, covered by NVIDIA's proxy shapes) |
+| Colliders | 3,658 kept from NVIDIA (55 of them already not collidable: 54 floor-tile meshes and a forklift part), 1 added, 150 set not collidable (conveyor frame, stickers and drive bands, covered by NVIDIA's proxy shapes); 205 not collidable in total |
 | Zones | `storage`, `open_floor`, `conveyor_cell` |
 | Object classes | 27 classes; 0 geometry prims without a class, 0 with more than one |
 | NVIDIA's own labels | 14 names mapped to the config's classes (e.g. `barel` → `barrel`, `bracket` → `beam`, `sign` → `rack_label`) |
@@ -179,6 +179,7 @@ isaac_python.bat qa_check.py out/apartment_annotated_flat.usda -o out/apartment_
 
 - Colliders that already exist are kept, not validated: their shapes are the scene author's choice.
 - In the warehouse, the 6.8 cm floor bar under the conveyor has no collider (NVIDIA's proxy shapes don't include it). The keep-out zone covers that area.
+- Two paper notes in the warehouse read `height_m = 0.000`. They are single flat quads (about 3 µm thick in NVIDIA's model), so this is their real height, not an empty bounding box; the crumpled paper notes measure 17-23 mm.
 - The wet-floor area is a label only: no puddle is rendered and floor grip is unchanged.
 - Each aisle's width is measured between the pair of objects that was narrowest when the config was written. If pallets are moved, the config needs updating.
 - The surface velocity attributes (`PhysxSurfaceVelocityAPI`) are written by hand, so the scripts don't need the PhysX schema package.
