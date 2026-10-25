@@ -60,6 +60,22 @@ def add_label(prim, taxonomy, value, schema):
                              Sdf.ValueTypeNames.String).Set(value)
 
 
+def class_labels(prim):
+    """Every class label on the prim, in either format, as (attribute, values).
+    A scene can carry its own labels, under any instance name."""
+    found = []
+    for attr in prim.GetAttributes():
+        name = attr.GetName()
+        if name == "semantics:labels:class":
+            found.append((attr, list(attr.Get() or [])))
+        elif (name.startswith("semantic:") and name.endswith(":params:semanticType")
+              and attr.Get() == "class"):
+            data = prim.GetAttribute(name.replace(":semanticType", ":semanticData"))
+            if data and data.Get():
+                found.append((data, [data.Get()]))
+    return found
+
+
 def copy_timeline(src, dst):
     """Timeline range of the source root layer, or an open-ended default.
 
@@ -206,13 +222,35 @@ def label_classes(stage, root, classes, schema):
     """Object class labels (pallet, box, chair...) for perception data.
     Each key is a prim path or pattern; the label covers everything below it.
     Rules apply in config order, so a later rule can override an earlier one."""
-    counts = {}
+    counts, labeled = {}, {}
     for pattern, cls in classes.items():
         prims = find(stage, root, pattern)
         for prim in prims:
             add_label(prim, "class", cls, schema)
+            labeled[str(prim.GetPath())] = cls
         counts[cls] = counts.get(cls, 0) + len(prims)
-    return counts
+    return counts, labeled
+
+
+def align_scene_classes(stage, labeled):
+    """Class labels the scene already has below a labeled prim are set to the
+    same value. Isaac Sim merges every class label on a prim and its
+    ancestors, so NVIDIA's "barel" next to our "barrel" would become a
+    class "barel,barrel". Returns {"old -> new": number of labels}."""
+    changes = {}
+    for path, cls in labeled.items():
+        it = iter(Usd.PrimRange(stage.GetPrimAtPath(path)))
+        for prim in it:
+            p = str(prim.GetPath())
+            if p != path and p in labeled:  # its own rule covers it
+                it.PruneChildren()
+                continue
+            for attr, values in class_labels(prim):
+                if values != [cls]:
+                    key = f"{','.join(values)} -> {cls}"
+                    changes[key] = changes.get(key, 0) + 1
+                    attr.Set([cls] if attr.GetTypeName().isArray else cls)
+    return changes
 
 
 def apply_collision(stage, root, non_collidable):
@@ -378,7 +416,8 @@ def main():
     zones = label_zones(stage, root, cfg.get("rooms", {}), meas, args.schema)
 
     # 2. object classes
-    classes = label_classes(stage, root, cfg.get("classes", {}), args.schema)
+    classes, labeled = label_classes(stage, root, cfg.get("classes", {}), args.schema)
+    relabeled = align_scene_classes(stage, labeled)
 
     # 3. floor surfaces (hard / carpet / rug)
     for p, surface in cfg.get("surfaces", {}).items():
@@ -405,11 +444,14 @@ def main():
         "annotation_collision_kept": col["kept"],
         "annotation_collision_added": col["added"],
         "annotation_collision_disabled": col["disabled"],
+        "annotation_class_relabeled": Vt.StringArray(
+            [f"{k} ({n})" for k, n in sorted(relabeled.items())]),
     }
     stage.Save()
     print(f"annotation layer : {args.out}")
     print(f"zones            : {zones or 'none'}")
     print(f"classes          : {classes or 'none'}")
+    print(f"scene labels set : {relabeled or 'none'}")
     print(f"collision        : {col['kept']} kept, {col['added']} added, "
           f"{col['disabled']} not collidable")
     print(f"moving surfaces  : {len(moving)}")

@@ -31,10 +31,15 @@
 ## Geometry without a class label
 - 0 of 25 geometry prims
 
+## Geometry with more than one class (merged by Isaac Sim)
+- 0 of 25 geometry prims
+
 ## Isaac Sim check (manual)
-- [ ] Annotated USD opens in Isaac Sim
-- [ ] Room/zone labels visible in the semantics editor
-- [ ] Class labels correct in a semantic segmentation render
-- [ ] Colliders visible with physics debug visualization
+- [x] Annotated USD opens in Isaac Sim
+- [x] Room/zone labels visible in the semantics editor
+- [x] Class labels correct in a semantic segmentation render
+- [x] Colliders visible with physics debug visualization
+
+Ticked by hand after checking in Isaac Sim 6.2 (2026-10-25); qa_check.py writes them unticked.
 
 Automated checks: PASS

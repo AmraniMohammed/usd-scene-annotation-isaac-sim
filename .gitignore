@@ -9,9 +9,10 @@ scenes/
 # Raw Movie Capture frames (joined into media/*.mp4)
 captures/
 
-# Outputs that contain or point to third-party scenes; only the test apartment is shared
+# Outputs that contain or point to third-party scenes; shared: the test apartment and the warehouse QA note (text only)
 out/*
 !out/apartment_*
+!out/warehouse_qa_note.md
 
 # Local notes and editor settings
 CLAUDE.md

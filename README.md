@@ -8,7 +8,7 @@ Python tools that take a 3D scene built by someone else and make it ready for ro
 
 A scene from a 3D artist or an asset library looks right but isn't ready for simulation:
 
-- **No semantic labels.** Perception training data (segmentation, bounding boxes) and scenario tests need every object labeled with a fixed vocabulary. Object names chosen by an artist (`SM_PaletteA_252`, `Box_1203`) aren't labels.
+- **Missing or mismatched semantic labels.** Perception training data (segmentation, bounding boxes) and scenario tests need every object labeled from one fixed list of classes. Object names chosen by an artist (`SM_PaletteA_252`, `Box_1203`) aren't labels, and labels that come with a scene often follow another list: NVIDIA's warehouse uses `barel`, `bracket`, and `sign` for aisle signs, rack labels and wet-floor signs alike.
 - **Colliders are incomplete or unsuited.** Some geometry has none, some has detailed visual meshes that would slow physics or catch objects, and some should not collide at all.
 - **Moving equipment is static.** A conveyor in a scene file is just a mesh. Nothing moves on it.
 - **Nobody has listed where robots fail:** overhangs a 2D lidar can't see, obstacles below its scan height, keep-out areas, aisle widths. Those are what a navigation test needs.
@@ -20,7 +20,7 @@ Doing this by hand on thousands of prims is slow, inconsistent, and has to be re
 `annotate.py` applies a config to a scene and writes everything into a separate layer. **The original scene files are never modified.**
 
 - **Zone labels** (`semantics:labels:room`), from prim paths or from floor rectangles for scenes with no room structure, such as a warehouse.
-- **Object class labels** (`semantics:labels:class`): pallet, box, rack, traffic cone… set by path rules. The QA note lists any geometry left without a class.
+- **Object class labels** (`semantics:labels:class`): pallet, box, rack, traffic cone… set by path rules. Class labels the scene already has below a labeled prim are set to the same value, in either label format; otherwise Isaac Sim merges the two into a combined class such as `barel,barrel`. The QA note lists each change and any geometry left without a class or with more than one.
 - **A collision decision on every geometry prim.** Colliders the scene already has are kept as authored. Geometry without one gets a collider. Listed prims are set not collidable: visual meshes whose collision comes from simpler proxy shapes, or things a robot should ignore.
 - **Moving surfaces:** conveyor rollers become kinematic bodies with a PhysX surface velocity, so boxes placed on them are carried along.
 - **Failure cases,** with the category list set per site (`semantics:labels:failure_case` plus `annotation:*` attributes). Heights, clearances and gap widths are **measured from the geometry**, never typed in.
@@ -29,7 +29,7 @@ Doing this by hand on thousands of prims is slow, inconsistent, and has to be re
 
 ## Example: NVIDIA warehouse with a conveyor line
 
-The scene is NVIDIA's `full_warehouse` from the Isaac Sim 6.2 assets: 3,148 objects with no zones or labels. A 10 m roller conveyor line (five `ConveyorBelt_A04` sections) was added with `make_line.py`. The config is [configs/warehouse.json](configs/warehouse.json).
+The scene is NVIDIA's `full_warehouse` from the Isaac Sim 6.2 assets: 3,148 objects with no zones, and class labels in the older `SemanticsAPI` format with NVIDIA's own names. A 10 m roller conveyor line (five `ConveyorBelt_A04` sections) was added with `make_line.py`. The config is [configs/warehouse.json](configs/warehouse.json).
 
 ![Isaac Sim with the conveyor's colliders, the keep-out marker, the added annotation prims and the conveyor's labels](media/how_it_works.png)
 
@@ -39,14 +39,15 @@ The scene is NVIDIA's `full_warehouse` from the Isaac Sim 6.2 assets: 3,148 obje
 
 *15 s simulation in Isaac Sim (click the image to open the video): six of the warehouse's box models dropped onto the rollers, carried toward the racks at 0.3 m/s.*
 
-**Result** (from the QA note):
+**Result** (from the [QA note](out/warehouse_qa_note.md)):
 
 | | |
 |---|---|
 | Geometry prims | 3,809, all with a collision decision |
 | Colliders | 3,658 kept from NVIDIA, 1 added, 150 set not collidable (conveyor frame, stickers and drive bands, covered by NVIDIA's proxy shapes) |
 | Zones | `storage`, `open_floor`, `conveyor_cell` |
-| Object classes | 27 classes, 0 geometry prims without a class |
+| Object classes | 27 classes; 0 geometry prims without a class, 0 with more than one |
+| NVIDIA's own labels | 14 names mapped to the config's classes (e.g. `barel` → `barrel`, `bracket` → `beam`, `sign` → `rack_label`) |
 | Moving surfaces | 5 roller beds at 0.3 m/s |
 | Failure-case categories | 6 of 7 present; `ramps_dock_plates` checked and absent |
 
@@ -64,10 +65,10 @@ The aisles are 3.95 m between rack frames, but pallets, boxes sticking out and t
 
 ## How it was checked
 
-- **Automated QA** ([qa_check.py](qa_check.py)): every geometry prim has a collision decision, zone labels exist, every moving surface is a kinematic body, and every measurement is a finite, plausible number. It exits with code 1 on failure. The last check was added after a real bug got through: measuring to NVIDIA's collision shapes (purpose `proxy`) returned an empty bounding box, and QA passed with an impossible clearance until the value was spotted in its output.
-- **Labels checked by eye.** QA can tell that a label is present, not that it's right. Uncertain class rules were checked in Isaac Sim before use: `SM_RackPile` turned out to be stacked rack uprights, not boxes, and got its own class.
+- **Automated QA** ([qa_check.py](qa_check.py)): every geometry prim has a collision decision and exactly one class, zone labels exist, every moving surface is a kinematic body, and every measurement is a finite, plausible number. It exits with code 1 on failure. The last check was added after a real bug got through: measuring to NVIDIA's collision shapes (purpose `proxy`) returned an empty bounding box, and QA passed with an impossible clearance until the value was spotted in its output.
+- **Labels checked in a segmentation render.** QA can tell that a label is present, not that it's right. A class segmentation rendered in Isaac Sim showed 9 combined classes (`barel,barrel`, `beam,bracket`…): NVIDIA's labels, in a format QA didn't read yet, merged with the pipeline's. After the fix and the "exactly one class" check, renders of both scenes show each class once and no unlabeled pixels. Uncertain class rules were also checked before use: `SM_RackPile` turned out to be stacked rack uprights, not boxes, and got its own class.
 - **Measurements cross-checked:** the conveyor clearance against the mesh's own vertex heights, and aisle widths against the rack layout.
-- **In Isaac Sim 6.2:** labels in the Semantics panel, colliders in the physics debug view, and the drop test in the video.
+- **In Isaac Sim 6.2:** labels in the Semantics panel, class segmentation renders, colliders in the physics debug view, and the drop test in the video.
 
 ## Use-case assumptions
 

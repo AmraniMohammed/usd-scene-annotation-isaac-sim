@@ -12,7 +12,7 @@ from collections import Counter
 
 from pxr import Usd, UsdGeom, UsdPhysics
 
-from annotate import DEFAULT_CATEGORIES
+from annotate import DEFAULT_CATEGORIES, class_labels
 
 
 def label(prim, taxonomy):
@@ -37,6 +37,17 @@ def inherited_class(prim, cache):
     return cache[path]
 
 
+def merged_classes(prim, cache):
+    """All class values on the prim and its ancestors, in either format, as
+    Isaac Sim merges them. More than one means a combined class like "a,b"."""
+    path = prim.GetPath()
+    if path not in cache:
+        own = {v for _, values in class_labels(prim) for v in values}
+        parent = prim.GetParent()
+        cache[path] = own | (merged_classes(parent, cache) if parent and not parent.IsPseudoRoot() else set())
+    return cache[path]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("scene")
@@ -52,6 +63,7 @@ def main():
     rooms = Counter()
     classes = Counter()
     class_cache, unclassified = {}, []
+    merged_cache, conflicts = {}, []
     cats = Counter()
     measures, bad_measures = [], []
     surfaces = Counter()
@@ -90,6 +102,9 @@ def main():
             geom += 1
             if not inherited_class(prim, class_cache):
                 unclassified.append(path)
+            merged = merged_classes(prim, merged_cache)
+            if len(merged) > 1:
+                conflicts.append(f"{path}: {','.join(sorted(merged))}")
             if prim.HasAPI(UsdPhysics.CollisionAPI):
                 with_api += 1
                 if UsdPhysics.CollisionAPI(prim).GetCollisionEnabledAttr().Get():
@@ -98,7 +113,7 @@ def main():
                 missing.append(path)
 
     ok = (with_api == geom and geom > 0 and len(rooms) > 0
-          and not moving_errors and not bad_measures)
+          and not moving_errors and not bad_measures and not conflicts)
     lines = [
         f"# QA note: {args.scene}",
         "",
@@ -131,6 +146,15 @@ def main():
         lines += [f"- {p}" for p in unclassified[:20]]
         if len(unclassified) > 20:
             lines.append(f"- ... and {len(unclassified) - 20} more")
+        lines += ["", "## Geometry with more than one class (merged by Isaac Sim)",
+                  f"- {len(conflicts)} of {geom} geometry prims"]
+        lines += [f"- {c}" for c in conflicts[:20]]
+        if len(conflicts) > 20:
+            lines.append(f"- ... and {len(conflicts) - 20} more")
+    relabeled = list(info.get("annotation_class_relabeled", []))
+    if relabeled:
+        lines += ["", "## Scene's own class labels set to the config's class"]
+        lines += [f"- {r}" for r in relabeled]
     lines += [
         "",
         "## Isaac Sim check (manual)",
@@ -144,6 +168,8 @@ def main():
     lines += ["", f"Automated checks: {'PASS' if ok else 'FAIL'}"]
     if missing:
         lines.append(f"Geometry without collision attribute: {missing[:10]}")
+    if conflicts:
+        lines.append(f"Geometry with more than one class: {len(conflicts)}")
     lines += moving_errors + bad_measures
 
     note = "\n".join(lines)

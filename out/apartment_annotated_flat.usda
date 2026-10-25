@@ -4,6 +4,7 @@
         string[] annotation_categories = ["thresholds", "stairs_cliffs", "low_clearance", "small_obstacles", "rugs_carpets", "floor_bumps", "reflective_transparent", "narrow_passages"]
         string[] annotation_categories_absent = ["stairs_cliffs"]
         string[] annotation_categories_present = ["floor_bumps", "low_clearance", "narrow_passages", "reflective_transparent", "rugs_carpets", "small_obstacles", "thresholds"]
+        string[] annotation_class_relabeled = []
         int annotation_collision_added = 24
         int annotation_collision_disabled = 1
         int annotation_collision_kept = 0
