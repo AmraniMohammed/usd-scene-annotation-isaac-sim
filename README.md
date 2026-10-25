@@ -35,9 +35,9 @@ The scene is NVIDIA's `full_warehouse` from the Isaac Sim 6.2 assets: 3,148 obje
 
 *The same view in Isaac Sim: the conveyor's colliders (the moving rollers in yellow), the conveyor keep-out zone, the prims the pipeline added (`/Annotations`, `/Cameras`), and the three labels on the conveyor.*
 
-[![Boxes dropped onto the conveyor and carried along. Click to open the video](media/conveyor_drop_poster.jpg)](media/conveyor_drop.mp4)
+https://github.com/user-attachments/assets/a7434fb2-0684-47df-aae5-25492e79ad18
 
-*15 s simulation in Isaac Sim (click the image to open the video): six of the warehouse's box models dropped onto the rollers, carried toward the racks at 0.3 m/s.*
+*15 s simulation in Isaac Sim: six of the warehouse's box models dropped onto the rollers, carried toward the racks at 0.3 m/s.*
 
 **Result** (from the [QA note](out/warehouse_qa_note.md)):
 
